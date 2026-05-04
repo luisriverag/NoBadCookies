@@ -1,0 +1,14 @@
+#cookieBanner, #cookieConsent, #gdpr-modal,
+#cookie-notice, #cookie-policy, #cookie-popup,
+.cookie-banner, .cookie-consent, .cookie-notice,
+.cookie-popup, .gdpr-banner, .privacy-banner,
+[class*="cookie"], [id*="cookie"],
+[class*="gdpr"], [id*="gdpr"],
+[class*="consent"], [id*="consent"] {
+  display: none !important;
+  height: 0 !important;
+  visibility: hidden !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

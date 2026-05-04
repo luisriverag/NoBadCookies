@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="../lib/style.css">
+  <script src="../lib/browserDetector.js"></script>
+  <script src="../lib/genericCookieHandler.js"></script>
+  <script src="cookieHandlerPopup.js"></script>
+  <script src="cookie-list.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div class="header">
+      <h2>CookiesBeGone</h2>
+      <button id="toggleWhitelist" title="Toggle for this site">⛔</button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search cookies...">
+    </div>
+    <div id="cookieList"></div>
+    <div class="button-bar">
+      <button id="addCookie">Add</button>
+      <button id="exportCookie">Export</button>
+      <button id="importCookie">Import</button>
+      <button id="refreshCookies">Refresh</button>
+    </div>
+  </div>
+  <template id="cookieTemplate">
+    <div class="cookie-item">
+      <div class="cookie-header">
+        <span class="cookie-name"></span>
+        <button class="delete-btn">×</button>
+      </div>
+      <div class="cookie-details">
+        <div class="cookie-value"></div>
+        <div class="cookie-meta"></div>
+      </div>
+    </div>
+  </template>
+</body>
+</html>
