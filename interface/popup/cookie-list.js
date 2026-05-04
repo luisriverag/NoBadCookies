@@ -22,8 +22,29 @@ document.addEventListener('DOMContentLoaded', () => {
     location.reload();
   });
 
-  document.getElementById('addCookie').addEventListener('click', () => {
-    alert('Add cookie functionality coming soon!');
+  document.getElementById('addCookie').addEventListener('click', async () => {
+    const currentUrl = await cookieHandler.getCurrentUrl();
+    const defaultDomain = new URL(currentUrl).hostname;
+
+    const name = prompt('Cookie name:');
+    if (!name) return;
+
+    const value = prompt('Cookie value:', '');
+    if (value === null) return;
+
+    const path = prompt('Cookie path:', '/') || '/';
+    const secure = confirm('Should this cookie be Secure?');
+
+    await cookieHandler.saveCookie({
+      url: currentUrl,
+      name: name.trim(),
+      value: value,
+      domain: defaultDomain,
+      path: path,
+      secure: secure
+    });
+
+    cookieHandler.showCookiesForTab();
   });
 
   document.getElementById('exportCookie').addEventListener('click', () => {
