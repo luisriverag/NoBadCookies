@@ -14,24 +14,69 @@
       <h2>NoBadCookies</h2>
       <button id="toggleWhitelist" title="Toggle auto-remove for this site">⛔</button>
     </div>
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Search cookies...">
+
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="cookiesTab" aria-selected="true">Cookies</button>
+      <button class="tab-btn" data-tab="removedTab" aria-selected="false">Removed Log</button>
+      <button class="tab-btn" data-tab="createTab" aria-selected="false">Create Cookie</button>
+      <button class="tab-btn" data-tab="suppliersTab" aria-selected="false">Approved Suppliers</button>
     </div>
-    <div id="cookieList"></div>
-    <div class="stats-box">
-      <strong>Removed cookies:</strong> <span id="removedCookieCount">0</span>
-      <div id="removedCookieLog" class="cookie-meta"></div>
-    </div>
-    <div class="button-bar">
-      <button id="addCookie">Add</button>
-      <button id="exportCookie">Export</button>
-      <button id="importCookie">Import</button>
-      <button id="refreshCookies">Refresh</button>
-    </div>
-    <div class="menu-link">
-      <a href="approved-suppliers.html" target="_blank">Manage Approved Suppliers</a>
-    </div>
+
+    <section id="cookiesTab" class="tab-content active">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search cookies...">
+      </div>
+      <div id="cookieList"></div>
+      <div class="button-bar">
+        <button id="exportCookie">Export</button>
+        <button id="importCookie">Import</button>
+        <button id="refreshCookies">Refresh</button>
+      </div>
+    </section>
+
+    <section id="removedTab" class="tab-content">
+      <div class="panel">
+        <div class="panel-title">Removed cookies count: <span id="removedCookieCount">0</span></div>
+        <ul id="removedCookieLog" class="log-list"><li class="muted">No cookies removed yet.</li></ul>
+      </div>
+    </section>
+
+    <section id="createTab" class="tab-content">
+      <div class="form-panel">
+        <label for="cookieNameInput">Name</label>
+        <input id="cookieNameInput" type="text" placeholder="session_id">
+
+        <label for="cookieValueInput">Value</label>
+        <input id="cookieValueInput" type="text" placeholder="abc123">
+
+        <label for="cookiePathInput">Path</label>
+        <input id="cookiePathInput" type="text" value="/">
+
+        <label class="checkbox-row" for="cookieSecureInput">
+          <input id="cookieSecureInput" type="checkbox">
+          Secure cookie
+        </label>
+
+        <button id="createCookieBtn">Create Cookie</button>
+      </div>
+    </section>
+
+    <section id="suppliersTab" class="tab-content">
+      <p class="help-text">
+        Cookies from these domains will NOT be auto-deleted when tabs close. Use *.domain.com to match subdomains.
+      </p>
+      <div id="supplierList" class="supplier-list"></div>
+      <p id="supplierFeedback" class="muted"></p>
+      <div class="add-section">
+        <input type="text" id="newSupplier" placeholder="*.example.com">
+        <button id="addSupplier">Add</button>
+      </div>
+      <div class="menu-link">
+        <button id="resetDefault">Reset to Default</button>
+      </div>
+    </section>
   </div>
+
   <template id="cookieTemplate">
     <div class="cookie-item">
       <div class="cookie-header">

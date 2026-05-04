@@ -1,20 +1,47 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: sans-serif; width: 400px; min-height: 500px; }
+body { font-family: sans-serif; width: 420px; min-height: 560px; }
 #app { display: flex; flex-direction: column; height: 100vh; }
 .header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #2c3e50; color: white; }
 .header h2 { font-size: 16px; }
+
+.tab-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; border-bottom: 1px solid #ddd; background: #f8f9fa; }
+.tab-btn { border: 1px solid #d8dce0; background: white; border-radius: 6px; padding: 6px 4px; font-size: 11px; cursor: pointer; }
+.tab-btn.active { background: #2c3e50; color: white; border-color: #2c3e50; }
+
+.tab-content { display: none; flex: 1; overflow-y: auto; }
+.tab-content.active { display: flex; flex-direction: column; }
+
 .search-box { padding: 10px; }
 .search-box input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
 #cookieList { flex: 1; overflow-y: auto; padding: 10px; }
 .cookie-item { border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; padding: 8px; }
 .cookie-header { display: flex; justify-content: space-between; align-items: center; }
 .cookie-name { font-weight: bold; font-size: 12px; }
-.delete-btn { background: #e74c3c; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; }
+.delete-btn, .remove-btn { background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer; }
+.delete-btn { border-radius: 50%; width: 20px; height: 20px; }
 .cookie-details { margin-top: 5px; font-size: 11px; color: #666; }
 .cookie-value { word-break: break-all; margin-bottom: 5px; }
+
 .button-bar { display: flex; gap: 5px; padding: 10px; background: #f5f5f5; border-top: 1px solid #ddd; }
 .button-bar button { flex: 1; padding: 8px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; }
 .button-bar button:hover { background: #e0e0e0; }
+
+.panel, .form-panel { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.panel-title { font-weight: 700; }
+.form-panel input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+.checkbox-row { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.form-panel button { padding: 8px; border: 1px solid #2c3e50; background: #2c3e50; color: #fff; border-radius: 4px; cursor: pointer; }
+
+.help-text { padding: 10px; font-size: 12px; color: #666; }
+.supplier-list { margin: 0 10px; }
+.supplier-item { display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px solid #ddd; }
+.supplier-text { flex: 1; font-family: monospace; font-size: 12px; }
+.remove-btn { padding: 3px 8px; }
+.add-section { display: flex; padding: 10px; gap: 6px; border-top: 1px solid #ddd; }
+.add-section input { flex: 1; padding: 8px; }
+.add-section button { padding: 8px 12px; }
+
 .menu-link { text-align: center; padding: 10px; border-top: 1px solid #ddd; font-size: 12px; }
-.menu-link a { color: #3498db; text-decoration: none; }
-.menu-link a:hover { text-decoration: underline; }
+
+.log-list { list-style: disc; margin-left: 18px; font-size: 12px; color: #444; display: flex; flex-direction: column; gap: 4px; }
+.muted { color: #7f8c8d; font-size: 12px; padding: 4px 10px; }
