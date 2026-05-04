@@ -546,6 +546,31 @@
     );
   }
 
+
+  function safeQuerySelectorAll(root, selector) {
+    if (!root || !selector) {
+      return [];
+    }
+
+    try {
+      return Array.from(root.querySelectorAll(selector));
+    } catch (error) {
+      return selector
+        .split(",")
+        .map(function (singleSelector) {
+          return singleSelector.trim();
+        })
+        .filter(Boolean)
+        .reduce(function (elements, singleSelector) {
+          try {
+            return elements.concat(Array.from(root.querySelectorAll(singleSelector)));
+          } catch (singleError) {
+            return elements;
+          }
+        }, []);
+    }
+  }
+
   function findHeuristicCookieAction() {
     const containerSelectors =
       '[id*="cookie"], [class*="cookie"], [id*="consent"], [class*="consent"], [id*="gdpr"], [class*="gdpr"], #onetrust-consent-sdk, #didomi-popup, .qc-cmp2-container, #CybotCookiebotDialog';
@@ -595,7 +620,7 @@
   function searchLoop(counter) {
     setTimeout(function () {
       timeoutDuration = 50;
-      document.querySelectorAll(searchPairsJoinedKeys).forEach(function (box) {
+      safeQuerySelectorAll(document, searchPairsJoinedKeys).forEach(function (box) {
         searchPairsKeys.forEach(function (selector) {
           if (box.matches(selector)) {
             (box.shadowRoot || box)
@@ -622,9 +647,10 @@
         });
       });
 
-      document
-        .querySelectorAll(searchGroups[counter % searchGroupsLength])
-        .forEach(function (element) {
+      safeQuerySelectorAll(
+        document,
+        searchGroups[counter % searchGroupsLength]
+      ).forEach(function (element) {
           if (element.click && !element.classList.contains("idcac")) {
             clickElement(element);
             setTimeout(function () {
