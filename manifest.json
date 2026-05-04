@@ -13,8 +13,12 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["interface/popup/approved-suppliers.html"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "interface/popup/approved-suppliers.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "host_permissions": [
@@ -24,29 +28,19 @@
     "service_worker": "src/data/background.js"
   },
   "action": {
-    "default_popup": "interface/popup/cookie-list.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
-  "side_panel": {
-    "default_path": "interface/sidepanel/cookie-list.html"
-  },
-  "devtools_page": "interface/devtools/devtool.html",
-  "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "default_popup": "interface/popup/cookie-list.html"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "css": ["src/data/css/common.css"],
-      "js": ["src/data/js/0_defaultClickHandler.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "css": [
+        "src/data/css/common.css"
+      ],
+      "js": [
+        "src/data/js/0_defaultClickHandler.js"
+      ],
       "run_at": "document_end"
     }
   ],
