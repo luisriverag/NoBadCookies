@@ -512,6 +512,86 @@
   const searchPairsJoinedKeys = searchPairsKeys.join(",");
   let timeoutDuration = 0;
 
+  function clickElement(element) {
+    if (!element || !element.click || element.classList.contains("idcac")) {
+      return;
+    }
+
+    element.classList.add("idcac");
+
+    if (typeof chrome == "object" && chrome.runtime) {
+      chrome.runtime.sendMessage({
+        command: "cookie_warning_dismissed",
+        url: document.location.href,
+      });
+    }
+
+    if (element.disabled) {
+      element.disabled = false;
+    }
+
+    element.click();
+  }
+
+  function isVisibleElement(element) {
+    if (!element) {
+      return false;
+    }
+
+    const style = window.getComputedStyle(element);
+    return (
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.opacity !== "0"
+    );
+  }
+
+  function findHeuristicCookieAction() {
+    const containerSelectors =
+      '[id*="cookie"], [class*="cookie"], [id*="consent"], [class*="consent"], [id*="gdpr"], [class*="gdpr"], #onetrust-consent-sdk, #didomi-popup, .qc-cmp2-container, #CybotCookiebotDialog';
+    const actionSelectors =
+      'button, a[role="button"], input[type="button"], input[type="submit"]';
+    const positiveActionPattern =
+      /necessary|essential|required|only|decline|reject|refuse|dismiss|close|save/i;
+    const riskyActionPattern =
+      /accept all|allow all|agree|yes,? i agree|consent all|accept cookies/i;
+    const cookieTextPattern = /cookie|consent|gdpr|privacy/i;
+
+    const containers = Array.from(document.querySelectorAll(containerSelectors));
+    for (let i = 0; i < containers.length; i++) {
+      const container = containers[i];
+      const text = (container.textContent || "").slice(0, 2400);
+
+      if (!cookieTextPattern.test(text) || !isVisibleElement(container)) {
+        continue;
+      }
+
+      const actions = container.querySelectorAll(actionSelectors);
+      for (let j = 0; j < actions.length; j++) {
+        const action = actions[j];
+        const label = [
+          action.textContent,
+          action.value,
+          action.getAttribute("aria-label"),
+          action.id,
+          action.className,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        if (
+          isVisibleElement(action) &&
+          positiveActionPattern.test(label) &&
+          !riskyActionPattern.test(label)
+        ) {
+          return action;
+        }
+      }
+    }
+
+    return null;
+  }
+
   function searchLoop(counter) {
     setTimeout(function () {
       timeoutDuration = 50;
@@ -560,21 +640,7 @@
         .querySelectorAll(searchGroups[counter % searchGroupsLength])
         .forEach(function (element) {
           if (element.click && !element.classList.contains("idcac")) {
-            element.classList.add("idcac");
-
-            if (typeof chrome == "object" && chrome.runtime) {
-              chrome.runtime.sendMessage({
-                command: "cookie_warning_dismissed",
-                url: document.location.href,
-              });
-            }
-
-            if (element) {
-              if (element.disabled) {
-                element.disabled = false;
-              }
-              element.click();
-            }
+            clickElement(element);
             setTimeout(function () {
               if (element && element.id != "disagree-btn") {
                 element.click();
@@ -585,6 +651,11 @@
             timeoutDuration += 100;
           }
         });
+
+      const heuristicAction = findHeuristicCookieAction();
+      if (heuristicAction) {
+        clickElement(heuristicAction);
+      }
 
       if (counter < 100 * searchGroupsLength) {
         searchLoop(counter + 1);
