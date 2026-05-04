@@ -30,8 +30,9 @@ NoBadCookies/
 │   │   ├── cookie-list.html       # Popup UI
 │   │   ├── cookie-list.js         # Popup logic
 │   │   ├── cookieHandlerPopup.js  # Popup cookie handler
-│   │   └── approved-suppliers.html # Approved suppliers management
-│   │   └── approved-suppliers.js  # Approved suppliers logic
+│   │   ├── approved-suppliers.html # Approved suppliers management
+│   │   ├── approved-suppliers.js  # Approved suppliers logic
+│   │   └── favicon.svg            # Popup favicon asset
 │   ├── lib/
 │   │   ├── browserDetector.js     # Cross-browser API detection
 │   │   ├── genericCookieHandler.js # Base cookie operations
@@ -202,6 +203,7 @@ Properties:
 
 **`cookie-list.html`**:
 - Main popup UI with cookie list, search, and action buttons
+- Includes popup favicon metadata via `<link rel="icon">`
 - Uses `<template>` element for cookie item rendering
 
 **`cookie-list.js`**:
@@ -231,6 +233,7 @@ class CookieHandlerPopup extends GenericCookieHandler {
 
 **`approved-suppliers.html`**:
 - Standalone page for managing approved_cookie_supplier list
+- Includes popup favicon metadata via `<link rel="icon">`
 - Displays current suppliers with remove buttons
 - Input field to add new supplier patterns
 - Reset to default button
