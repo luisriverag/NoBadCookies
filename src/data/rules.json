@@ -1,9 +1,11 @@
-{
-  "id": "ruleset",
-  "priority": 1,
-  "action": { "type": "block" },
-  "condition": {
-    "urlFilter": "/iubenda_cs",
-    "resourceTypes": ["script", "stylesheet", "xmlhttprequest", "image"]
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "iubenda_cs",
+      "resourceTypes": ["script", "stylesheet", "xmlhttprequest", "image"]
+    }
   }
-}
+]
