@@ -1,3 +1,11 @@
+const defaultSuppliers = [
+  '*.github.com',
+  '*.gmail.com',
+  '*.x.com',
+  '*.chatgpt.com',
+  '*.mksmad.org'
+];
+
 function loadRemovalStats() {
   chrome.runtime.sendMessage({ type: 'getRemovalStats' }, (response) => {
     const count = response?.count || 0;
@@ -8,8 +16,22 @@ function loadRemovalStats() {
     if (!countEl || !logEl) return;
 
     countEl.textContent = String(count);
-    const recent = log.slice(0, 5).map(item => `${item.name} @ ${item.domain}`);
-    logEl.textContent = recent.length ? `Recent: ${recent.join(' • ')}` : 'Recent: none';
+    const recent = log.slice(0, 20);
+    logEl.innerHTML = '';
+
+    if (!recent.length) {
+      const li = document.createElement('li');
+      li.className = 'muted';
+      li.textContent = 'No cookies removed yet.';
+      logEl.appendChild(li);
+      return;
+    }
+
+    recent.forEach((item) => {
+      const li = document.createElement('li');
+      li.textContent = `${item.name} @ ${item.domain}`;
+      logEl.appendChild(li);
+    });
   });
 }
 
@@ -19,6 +41,9 @@ let searchTimeout = null;
 document.addEventListener('DOMContentLoaded', () => {
   cookieHandler.showCookiesForTab();
   loadRemovalStats();
+  loadSuppliers();
+
+  bindTabs();
 
   document.getElementById('searchInput').addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
@@ -39,31 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     location.reload();
   });
 
-  document.getElementById('addCookie').addEventListener('click', async () => {
-    const currentUrl = await cookieHandler.getCurrentUrl();
-    const defaultDomain = new URL(currentUrl).hostname;
-
-    const name = prompt('Cookie name:');
-    if (!name) return;
-
-    const value = prompt('Cookie value:', '');
-    if (value === null) return;
-
-    const path = prompt('Cookie path:', '/') || '/';
-    const secure = confirm('Should this cookie be Secure?');
-
-    await cookieHandler.saveCookie({
-      url: currentUrl,
-      name: name.trim(),
-      value: value,
-      domain: defaultDomain,
-      path: path,
-      secure: secure
-    });
-
-    cookieHandler.showCookiesForTab();
-    loadRemovalStats();
-  });
+  document.getElementById('createCookieBtn').addEventListener('click', createCookieFromForm);
 
   document.getElementById('exportCookie').addEventListener('click', () => {
     const json = JSON.stringify(cookieHandler.cookies, null, 2);
@@ -92,4 +93,151 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     input.click();
   });
+
+  document.getElementById('addSupplier').addEventListener('click', addSupplier);
+  document.getElementById('newSupplier').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addSupplier();
+  });
+
+  document.getElementById('resetDefault').addEventListener('click', () => {
+    if (confirm('Reset to default supplier list?')) {
+      chrome.storage.local.set({ approved_cookie_supplier: defaultSuppliers }, () => {
+        loadSuppliers();
+      });
+    }
+  });
 });
+
+function bindTabs() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach((b) => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      tabContents.forEach((content) => content.classList.remove('active'));
+
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+async function createCookieFromForm() {
+  const currentUrl = await cookieHandler.getCurrentUrl();
+  const defaultDomain = new URL(currentUrl).hostname;
+
+  const name = document.getElementById('cookieNameInput').value.trim();
+  const value = document.getElementById('cookieValueInput').value;
+  const path = document.getElementById('cookiePathInput').value || '/';
+  const secure = document.getElementById('cookieSecureInput').checked;
+
+  if (!name) {
+    alert('Cookie name is required.');
+    return;
+  }
+
+  if (!path.startsWith('/')) {
+    alert('Cookie path must start with /.');
+    return;
+  }
+
+  await cookieHandler.saveCookie({
+    url: currentUrl,
+    name,
+    value,
+    domain: defaultDomain,
+    path,
+    secure
+  });
+
+  document.getElementById('cookieNameInput').value = '';
+  document.getElementById('cookieValueInput').value = '';
+  document.getElementById('cookiePathInput').value = '/';
+  document.getElementById('cookieSecureInput').checked = false;
+
+  cookieHandler.showCookiesForTab();
+  loadRemovalStats();
+}
+
+function loadSuppliers() {
+  chrome.storage.local.get(['approved_cookie_supplier'], (result) => {
+    const suppliers = result.approved_cookie_supplier || defaultSuppliers;
+    renderSuppliers(suppliers);
+  });
+}
+
+function renderSuppliers(suppliers) {
+  const list = document.getElementById('supplierList');
+  list.innerHTML = '';
+
+  suppliers.forEach((supplier, index) => {
+    const div = document.createElement('div');
+    div.className = 'supplier-item';
+
+    const text = document.createElement('span');
+    text.className = 'supplier-text';
+    text.textContent = supplier;
+
+    const remove = document.createElement('button');
+    remove.className = 'remove-btn';
+    remove.dataset.index = String(index);
+    remove.textContent = 'Remove';
+
+    div.appendChild(text);
+    div.appendChild(remove);
+    list.appendChild(div);
+  });
+
+  document.querySelectorAll('.remove-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const index = parseInt(btn.dataset.index, 10);
+      removeSupplier(index);
+    });
+  });
+}
+
+function addSupplier() {
+  const input = document.getElementById('newSupplier');
+  const newSupplier = input.value.trim();
+
+  const feedbackEl = document.getElementById('supplierFeedback');
+  if (!newSupplier) {
+    feedbackEl.textContent = 'Please enter a supplier domain pattern.';
+    return;
+  }
+
+  if (!/^\*?\.?[a-z0-9.-]+$/i.test(newSupplier)) {
+    feedbackEl.textContent = 'Invalid supplier format. Example: *.example.com';
+    return;
+  }
+
+  chrome.storage.local.get(['approved_cookie_supplier'], (result) => {
+    const suppliers = result.approved_cookie_supplier || [];
+    if (!suppliers.includes(newSupplier)) {
+      suppliers.push(newSupplier);
+      chrome.storage.local.set({ approved_cookie_supplier: suppliers }, () => {
+        input.value = '';
+        feedbackEl.textContent = 'Supplier added.';
+        loadSuppliers();
+      });
+      return;
+    }
+
+    feedbackEl.textContent = 'Supplier already exists.';
+  });
+}
+
+function removeSupplier(index) {
+  chrome.storage.local.get(['approved_cookie_supplier'], (result) => {
+    const suppliers = result.approved_cookie_supplier || [];
+    suppliers.splice(index, 1);
+    chrome.storage.local.set({ approved_cookie_supplier: suppliers }, () => {
+      loadSuppliers();
+    });
+  });
+}
