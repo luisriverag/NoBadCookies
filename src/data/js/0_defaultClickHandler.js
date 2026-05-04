@@ -602,21 +602,7 @@
               .querySelectorAll(searchPairs[selector].join(","))
               .forEach(function (element) {
                 if (element.click && !element.classList.contains("idcac")) {
-                  element.classList.add("idcac");
-
-                  if (typeof chrome == "object" && chrome.runtime) {
-                    chrome.runtime.sendMessage({
-                      command: "cookie_warning_dismissed",
-                      url: document.location.href,
-                    });
-                  }
-
-                  if (element) {
-                    if (element.disabled) {
-                      element.disabled = false;
-                    }
-                    element.click();
-                  }
+                  clickElement(element);
                   // The 2nd click is just to be sure. Avoid when a double click breaks the process.
                   if (selector != ".message-container") {
                     setTimeout(function () {
