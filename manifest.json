@@ -28,7 +28,11 @@
     "service_worker": "src/data/background.js"
   },
   "action": {
-    "default_popup": "interface/popup/cookie-list.html"
+    "default_popup": "interface/popup/cookie-list.html",
+    "default_icon": {
+      "16": "interface/popup/favicon.svg",
+      "32": "interface/popup/favicon.svg"
+    }
   },
   "content_scripts": [
     {
@@ -53,5 +57,11 @@
       }
     ]
   },
-  "minimum_chrome_version": "88"
+  "minimum_chrome_version": "88",
+  "icons": {
+    "16": "interface/popup/favicon.svg",
+    "32": "interface/popup/favicon.svg",
+    "48": "interface/popup/favicon.svg",
+    "128": "interface/popup/favicon.svg"
+  }
 }
