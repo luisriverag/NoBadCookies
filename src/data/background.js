@@ -13,12 +13,18 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.get(['whitelist', 'showBadge', 'approved_cookie_supplier'], (result) => {
+  chrome.storage.local.get(['whitelist', 'showBadge', 'approved_cookie_supplier', 'removedCookieCount', 'removedCookieLog'], (result) => {
     if (!result.whitelist) {
       chrome.storage.local.set({ whitelist: [] });
     }
     if (result.showBadge === undefined) {
       chrome.storage.local.set({ showBadge: true });
+    }
+    if (result.removedCookieCount === undefined) {
+      chrome.storage.local.set({ removedCookieCount: 0 });
+    }
+    if (!result.removedCookieLog) {
+      chrome.storage.local.set({ removedCookieLog: [] });
     }
     if (!result.approved_cookie_supplier) {
       chrome.storage.local.set({
@@ -84,6 +90,24 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   delete tabList[tabId];
 });
 
+
+function logCookieRemoval(entry) {
+  chrome.storage.local.get(['removedCookieCount', 'removedCookieLog'], (result) => {
+    const removedCookieCount = (result.removedCookieCount || 0) + 1;
+    const removedCookieLog = result.removedCookieLog || [];
+
+    removedCookieLog.unshift({
+      ...entry,
+      removedAt: new Date().toISOString()
+    });
+
+    chrome.storage.local.set({
+      removedCookieCount: removedCookieCount,
+      removedCookieLog: removedCookieLog.slice(0, 100)
+    });
+  });
+}
+
 function matchesPattern(hostname, pattern) {
   if (pattern === '*') return true;
   if (pattern.startsWith('*.')) {
@@ -110,14 +134,22 @@ async function autoRemoveCookies(hostname) {
   chrome.cookies.getAll({ domain: hostname }, (cookies) => {
     cookies.forEach(cookie => {
       const url = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
-      chrome.cookies.remove({ url: url, name: cookie.name });
+      chrome.cookies.remove({ url: url, name: cookie.name }, (details) => {
+        if (details) {
+          logCookieRemoval({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: 'auto' });
+        }
+      });
     });
   });
 
   chrome.cookies.getAll({ domain: '.' + hostname }, (cookies) => {
     cookies.forEach(cookie => {
       const url = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
-      chrome.cookies.remove({ url: url, name: cookie.name });
+      chrome.cookies.remove({ url: url, name: cookie.name }, (details) => {
+        if (details) {
+          logCookieRemoval({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: 'auto' });
+        }
+      });
     });
   });
 }
@@ -135,6 +167,14 @@ function doTheMagic(tabId) {
   chrome.scripting.executeScript({
     target: { tabId: tabId },
     files: ['src/data/js/embedsHandler.js']
+  }).catch(() => {});
+
+  // Run broad consent-manager handler on every non-whitelisted page.
+  // This brings back the wider coverage behavior users expect from
+  // I-Still-Dont-Care-About-Cookies style blocking/clicking rules.
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    files: ['src/data/js/5_clickHandler.js']
   }).catch(() => {});
 
   chrome.tabs.get(tabId, (tab) => {
@@ -180,6 +220,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'removeCookie') {
     const url = `http${request.secure ? 's' : ''}://${request.domain}${request.path}`;
     chrome.cookies.remove({ url: url, name: request.name }, (details) => {
+      if (details) {
+        logCookieRemoval({ name: request.name, domain: request.domain, path: request.path, source: 'manual' });
+      }
       sendResponse(details);
     });
     return true;
@@ -221,6 +264,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'isApprovedSupplier') {
     isApprovedSupplier(request.hostname).then((approved) => {
       sendResponse({ approved: approved });
+    });
+    return true;
+  }
+  if (request.type === 'getRemovalStats') {
+    chrome.storage.local.get(['removedCookieCount', 'removedCookieLog'], (result) => {
+      sendResponse({
+        count: result.removedCookieCount || 0,
+        log: result.removedCookieLog || []
+      });
     });
     return true;
   }

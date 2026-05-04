@@ -1,8 +1,24 @@
+function loadRemovalStats() {
+  chrome.runtime.sendMessage({ type: 'getRemovalStats' }, (response) => {
+    const count = response?.count || 0;
+    const log = response?.log || [];
+
+    const countEl = document.getElementById('removedCookieCount');
+    const logEl = document.getElementById('removedCookieLog');
+    if (!countEl || !logEl) return;
+
+    countEl.textContent = String(count);
+    const recent = log.slice(0, 5).map(item => `${item.name} @ ${item.domain}`);
+    logEl.textContent = recent.length ? `Recent: ${recent.join(' • ')}` : 'Recent: none';
+  });
+}
+
 let cookieHandler = new CookieHandlerPopup();
 let searchTimeout = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   cookieHandler.showCookiesForTab();
+  loadRemovalStats();
 
   document.getElementById('searchInput').addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
@@ -13,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('refreshCookies').addEventListener('click', () => {
     cookieHandler.showCookiesForTab();
+    loadRemovalStats();
   });
 
   document.getElementById('toggleWhitelist').addEventListener('click', async () => {
@@ -45,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cookieHandler.showCookiesForTab();
+    loadRemovalStats();
   });
 
   document.getElementById('exportCookie').addEventListener('click', () => {
@@ -68,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cookies = JSON.parse(ev.target.result);
         cookies.forEach(c => cookieHandler.saveCookie(c));
         cookieHandler.showCookiesForTab();
+        loadRemovalStats();
       };
       reader.readAsText(file);
     };
