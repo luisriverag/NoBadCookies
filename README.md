@@ -19,7 +19,7 @@ A browser extension that combines automatic cookie banner removal with powerful 
 1. Open `chrome://extensions/` (or `edge://extensions/`)
 2. Enable "Developer mode" (top right)
 3. Click "Load unpacked"
-4. Select the `CookiesBeGone` folder
+4. Select the `NoBadCookies` folder (the repository root containing `manifest.json`)
 
 ### Firefox
 
@@ -37,7 +37,6 @@ A browser extension that combines automatic cookie banner removal with powerful 
 ### Cookie Management
 - Click the extension icon to open the cookie manager
 - **Search**: Filter cookies by name or value
-- **Add**: Create a new cookie (coming soon)
 - **Export**: Download all cookies as JSON
 - **Import**: Load cookies from a JSON file
 - **Refresh**: Reload the cookie list
@@ -72,7 +71,7 @@ See [SPEC.md](SPEC.md) for comprehensive technical documentation.
 ### Architecture
 - **Background Service Worker**: Manages tab events, cookie operations, and banner removal
 - **Content Scripts**: CSS and JS injected into pages to handle cookie banners
-- **Popup UI**: React-based interface for cookie management
+- **Popup UI**: Plain JavaScript interface for cookie management
 - **Storage**: Uses `chrome.storage.local` for settings and whitelists
 
 ## Development
@@ -88,8 +87,12 @@ cd NoBadCookies
 
 ### Running Tests
 ```bash
-# TODO: Add test command
+npm install
+npm test
 ```
+
+### Coverage Note
+The current test suite focuses primarily on behavior and message flows. Jest coverage reporting is configured, but some extension scripts are dynamically loaded/mocked in tests, so the coverage table can appear lower than expected even when core behavior is tested.
 
 ## Based On
 
