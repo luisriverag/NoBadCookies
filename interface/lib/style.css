@@ -15,3 +15,6 @@ body { font-family: sans-serif; width: 400px; min-height: 500px; }
 .button-bar { display: flex; gap: 5px; padding: 10px; background: #f5f5f5; border-top: 1px solid #ddd; }
 .button-bar button { flex: 1; padding: 8px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; }
 .button-bar button:hover { background: #e0e0e0; }
+.menu-link { text-align: center; padding: 10px; border-top: 1px solid #ddd; font-size: 12px; }
+.menu-link a { color: #3498db; text-decoration: none; }
+.menu-link a:hover { text-decoration: underline; }

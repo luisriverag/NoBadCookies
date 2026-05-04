@@ -1,13 +1,26 @@
 {
-  "name": "cookiesbegone",
+  "name": "nobadcookies",
   "version": "1.0.0",
   "description": "Auto-remove cookie banners and manage cookies with ease",
   "main": "src/data/background.js",
   "scripts": {
     "build": "echo 'Build complete - load extension from this directory'",
-    "test": "echo 'No tests specified'"
+    "test": "jest --testPathPattern=tests --coverage",
+    "test:watch": "jest --testPathPattern=tests --watch"
   },
   "keywords": ["cookies", "privacy", "cookie-banner", "gdpr"],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "coveragePathIgnorePatterns": ["/node_modules/", "/tests/"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "interface/**/*.js"
+    ]
+  }
 }

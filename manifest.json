@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "CookiesBeGone",
+  "name": "NoBadCookies",
   "version": "1.0.0",
   "description": "Auto-remove cookie banners and manage cookies with ease",
   "permissions": [
@@ -10,6 +10,12 @@
     "scripting",
     "declarativeNetRequest",
     "webNavigation"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["interface/popup/approved-suppliers.html"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "host_permissions": [
     "<all_urls>"

@@ -13,12 +13,23 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.get(['whitelist', 'showBadge'], (result) => {
+  chrome.storage.local.get(['whitelist', 'showBadge', 'approved_cookie_supplier'], (result) => {
     if (!result.whitelist) {
       chrome.storage.local.set({ whitelist: [] });
     }
     if (result.showBadge === undefined) {
       chrome.storage.local.set({ showBadge: true });
+    }
+    if (!result.approved_cookie_supplier) {
+      chrome.storage.local.set({
+        approved_cookie_supplier: [
+          '*.github.com',
+          '*.gmail.com',
+          '*.x.com',
+          '*.chatgpt.com',
+          '*.mksmad.org'
+        ]
+      });
     }
   });
 });
@@ -66,8 +77,50 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
+  const tabInfo = tabList[tabId];
+  if (tabInfo && tabInfo.hostname) {
+    autoRemoveCookies(tabInfo.hostname);
+  }
   delete tabList[tabId];
 });
+
+function matchesPattern(hostname, pattern) {
+  if (pattern === '*') return true;
+  if (pattern.startsWith('*.')) {
+    const domain = pattern.slice(2);
+    return hostname === domain || hostname.endsWith('.' + domain);
+  }
+  return hostname === pattern;
+}
+
+function isApprovedSupplier(hostname) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['approved_cookie_supplier'], (result) => {
+      const suppliers = result.approved_cookie_supplier || [];
+      const approved = suppliers.some(pattern => matchesPattern(hostname, pattern));
+      resolve(approved);
+    });
+  });
+}
+
+async function autoRemoveCookies(hostname) {
+  const approved = await isApprovedSupplier(hostname);
+  if (approved) return;
+
+  chrome.cookies.getAll({ domain: hostname }, (cookies) => {
+    cookies.forEach(cookie => {
+      const url = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
+      chrome.cookies.remove({ url: url, name: cookie.name });
+    });
+  });
+
+  chrome.cookies.getAll({ domain: '.' + hostname }, (cookies) => {
+    cookies.forEach(cookie => {
+      const url = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
+      chrome.cookies.remove({ url: url, name: cookie.name });
+    });
+  });
+}
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   updateBadge(activeInfo.tabId);
@@ -150,6 +203,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'getWhitelist') {
     chrome.storage.local.get(['whitelist'], (result) => {
       sendResponse({ whitelist: result.whitelist || [] });
+    });
+    return true;
+  }
+  if (request.type === 'getApprovedSuppliers') {
+    chrome.storage.local.get(['approved_cookie_supplier'], (result) => {
+      sendResponse({ suppliers: result.approved_cookie_supplier || [] });
+    });
+    return true;
+  }
+  if (request.type === 'saveApprovedSuppliers') {
+    chrome.storage.local.set({ approved_cookie_supplier: request.suppliers }, () => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+  if (request.type === 'isApprovedSupplier') {
+    isApprovedSupplier(request.hostname).then((approved) => {
+      sendResponse({ approved: approved });
     });
     return true;
   }
