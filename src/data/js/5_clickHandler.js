@@ -12,7 +12,7 @@
                 third argument is the chain as array if condition selector isn't found
 */
 
-const classname = Math.random()
+var classname = Math.random()
   .toString(36)
   .replace(/[^a-z]+/g, "");
 
@@ -62,7 +62,7 @@ function shadowQuerySelector(selector, root = document) {
   return undefined;
 }
 
-let currentChainElement = 0;
+var currentChainElement = 0;
 
 function _chain(...selectors) {
   const argumentsLength = selectors.length;
