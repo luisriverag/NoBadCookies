@@ -88,14 +88,14 @@ describe('Approved Supplier Checking', () => {
   }
 
   test('should approve suppliers from list', async () => {
-    const suppliers = ['*.github.com', '*.gmail.com', '*.x.com'];
+    const suppliers = ['*.github.com', '*.gmail.com', '*.riverlan.com'];
 
     expect(await isApprovedSupplier('github.com', suppliers)).toBe(true);
     expect(await isApprovedSupplier('api.github.com', suppliers)).toBe(true);
     expect(await isApprovedSupplier('gmail.com', suppliers)).toBe(true);
     expect(await isApprovedSupplier('mail.gmail.com', suppliers)).toBe(true);
-    expect(await isApprovedSupplier('x.com', suppliers)).toBe(true);
-    expect(await isApprovedSupplier('twitter.com', suppliers)).toBe(false);
+    expect(await isApprovedSupplier('riverlan.com', suppliers)).toBe(true);
+    expect(await isApprovedSupplier('x.com', suppliers)).toBe(false);
     expect(await isApprovedSupplier('google.com', suppliers)).toBe(false);
   });
 
@@ -130,7 +130,7 @@ describe('Tab List Management', () => {
   test('should track multiple tabs', () => {
     tabList[1] = { hostname: 'github.com', whitelisted: false };
     tabList[2] = { hostname: 'google.com', whitelisted: false };
-    tabList[3] = { hostname: 'x.com', whitelisted: true };
+    tabList[3] = { hostname: 'riverlan.com', whitelisted: true };
 
     expect(Object.keys(tabList).length).toBe(3);
   });

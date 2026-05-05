@@ -49,9 +49,10 @@ A browser extension that combines automatic cookie banner removal with powerful 
 - Default approved suppliers:
   - `*.github.com`
   - `*.gmail.com`
-  - `*.x.com`
   - `*.chatgpt.com`
   - `*.mksmad.org`
+  - `*.riverlan.com`
+  - `*.luisriverag.com`
 
 ## How It Works
 

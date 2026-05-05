@@ -31,9 +31,10 @@ chrome.runtime.onInstalled.addListener(() => {
         approved_cookie_supplier: [
           '*.github.com',
           '*.gmail.com',
-          '*.x.com',
           '*.chatgpt.com',
-          '*.mksmad.org'
+          '*.mksmad.org',
+          '*.riverlan.com',
+          '*.luisriverag.com'
         ]
       });
     }
@@ -52,19 +53,7 @@ function checkWhitelist() {
 }
 
 function updateBadge(tabId) {
-  chrome.storage.local.get(['showBadge'], (result) => {
-    if (!result.showBadge) {
-      chrome.action.setBadgeText({ tabId: tabId, text: '' });
-      return;
-    }
-    if (tabList[tabId] && tabList[tabId].whitelisted) {
-      chrome.action.setBadgeText({ tabId: tabId, text: '⛔' });
-      chrome.action.setBadgeBackgroundColor({ tabId: tabId, color: '#FF0000' });
-    } else {
-      chrome.action.setBadgeText({ tabId: tabId, text: '✅' });
-      chrome.action.setBadgeBackgroundColor({ tabId: tabId, color: '#00AA00' });
-    }
-  });
+  chrome.action.setBadgeText({ tabId: tabId, text: '' });
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
