@@ -73,7 +73,7 @@ See [SPEC.md](SPEC.md) for comprehensive technical documentation.
 - **Background Service Worker**: Manages tab events, cookie operations, and banner removal
 - **Content Scripts**: CSS and JS injected into pages to handle cookie banners
 - **Popup UI**: Plain JavaScript interface for cookie management
-- **Popup assets**: Includes `interface/popup/favicon.svg` for browser-tab branding
+- **Popup assets**: Includes `interface/popup/favicon.png` for browser-tab branding
 - **Storage**: Uses `chrome.storage.local` for settings and whitelists
 
 ## Development

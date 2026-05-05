@@ -32,7 +32,7 @@ NoBadCookies/
 │   │   ├── cookieHandlerPopup.js  # Popup cookie handler
 │   │   ├── approved-suppliers.html # Approved suppliers management
 │   │   ├── approved-suppliers.js  # Approved suppliers logic
-│   │   └── favicon.svg            # Popup favicon asset
+│   │   └── favicon.png            # Popup favicon asset
 │   ├── lib/
 │   │   ├── browserDetector.js     # Cross-browser API detection
 │   │   ├── genericCookieHandler.js # Base cookie operations
@@ -379,7 +379,6 @@ Detects browser via user agent:
   "approved_cookie_supplier": [
     "*.github.com",
     "*.gmail.com",
-    "*.x.com",
     "*.chatgpt.com",
     "*.mksmad.org"
   ]

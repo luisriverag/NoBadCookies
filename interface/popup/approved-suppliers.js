@@ -1,7 +1,6 @@
 const defaultSuppliers = [
   '*.github.com',
   '*.gmail.com',
-  '*.x.com',
   '*.chatgpt.com',
   '*.mksmad.org'
 ];

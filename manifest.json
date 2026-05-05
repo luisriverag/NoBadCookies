@@ -30,8 +30,8 @@
   "action": {
     "default_popup": "interface/popup/cookie-list.html",
     "default_icon": {
-      "16": "interface/popup/favicon.svg",
-      "32": "interface/popup/favicon.svg"
+      "16": "interface/popup/favicon.png",
+      "32": "interface/popup/favicon.png"
     }
   },
   "content_scripts": [
@@ -59,9 +59,9 @@
   },
   "minimum_chrome_version": "88",
   "icons": {
-    "16": "interface/popup/favicon.svg",
-    "32": "interface/popup/favicon.svg",
-    "48": "interface/popup/favicon.svg",
-    "128": "interface/popup/favicon.svg"
+    "16": "interface/popup/favicon.png",
+    "32": "interface/popup/favicon.png",
+    "48": "interface/popup/favicon.png",
+    "128": "interface/popup/favicon.png"
   }
 }
