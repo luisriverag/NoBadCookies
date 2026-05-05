@@ -248,9 +248,10 @@ Default approved suppliers:
 ```
 *.github.com
 *.gmail.com
-*.x.com
 *.chatgpt.com
 *.mksmad.org
+*.riverlan.com
+*.luisriverag.com
 ```
 
 #### Generic Cookie Handler (`interface/lib/genericCookieHandler.js`)
@@ -371,16 +372,15 @@ Detects browser via user agent:
     "test.org"
   ],
 
-  // Show badge indicators on icon
-  "showBadge": true,
-
   // Domains where cookies persist after tab close
   // Supports wildcards: *.domain.com
   "approved_cookie_supplier": [
     "*.github.com",
     "*.gmail.com",
     "*.chatgpt.com",
-    "*.mksmad.org"
+    "*.mksmad.org",
+    "*.riverlan.com",
+    "*.luisriverag.com"
   ]
 }
 ```
@@ -403,11 +403,7 @@ Detects browser via user agent:
 
 ## Badge Indicators
 
-| Badge | Meaning | Color |
-|-------|---------|-------|
-| ✅ | Auto-removal active for this site | Green (#00AA00) |
-| ⛔ | Site is whitelisted (no auto-removal) | Red (#FF0000) |
-| (empty) | Badge disabled in settings | N/A |
+Badge indicators are currently disabled by `updateBadge()` in `src/data/background.js`, which always clears the action badge text.
 
 ---
 

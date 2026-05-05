@@ -4,9 +4,10 @@ describe('Approved Suppliers Management', () => {
   const defaultSuppliers = [
     '*.github.com',
     '*.gmail.com',
-    '*.x.com',
     '*.chatgpt.com',
-    '*.mksmad.org'
+    '*.mksmad.org',
+    '*.riverlan.com',
+    '*.luisriverag.com'
   ];
 
   beforeEach(() => {
@@ -14,9 +15,9 @@ describe('Approved Suppliers Management', () => {
   });
 
   test('should initialize with default suppliers', () => {
-    expect(suppliers.length).toBe(5);
+    expect(suppliers.length).toBe(6);
     expect(suppliers[0]).toBe('*.github.com');
-    expect(suppliers[4]).toBe('*.mksmad.org');
+    expect(suppliers[5]).toBe('*.luisriverag.com');
   });
 
   test('should add new supplier', () => {
@@ -25,7 +26,7 @@ describe('Approved Suppliers Management', () => {
       suppliers.push(newSupplier);
     }
 
-    expect(suppliers.length).toBe(6);
+    expect(suppliers.length).toBe(7);
     expect(suppliers).toContain('*.example.com');
   });
 
@@ -35,14 +36,14 @@ describe('Approved Suppliers Management', () => {
       suppliers.push(supplier);
     }
 
-    expect(suppliers.length).toBe(5);
+    expect(suppliers.length).toBe(6);
   });
 
   test('should remove supplier by index', () => {
     const index = 0; // Remove *.github.com
     suppliers.splice(index, 1);
 
-    expect(suppliers.length).toBe(4);
+    expect(suppliers.length).toBe(5);
     expect(suppliers).not.toContain('*.github.com');
     expect(suppliers[0]).toBe('*.gmail.com');
   });
@@ -52,7 +53,7 @@ describe('Approved Suppliers Management', () => {
     suppliers = [...defaultSuppliers];
 
     expect(suppliers).toEqual(defaultSuppliers);
-    expect(suppliers.length).toBe(5);
+    expect(suppliers.length).toBe(6);
   });
 
   test('should validate supplier pattern format', () => {
