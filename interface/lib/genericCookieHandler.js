@@ -25,8 +25,23 @@ class GenericCookieHandler {
         `${cookie.domain} | ${cookie.path} | ${cookie.secure ? 'Secure' : 'Not Secure'}`;
 
       clone.querySelector('.delete-btn').addEventListener('click', () => {
-        this.removeCookie(cookie.name, this.currentUrl);
+        this.removeCookie(cookie)
+          .then(() => {
+            if (typeof this.onCookieDeleted === 'function') {
+              this.onCookieDeleted(cookie, true);
+            }
+            this.showCookiesForTab();
+          })
+          .catch(() => {
+            if (typeof this.onCookieDeleted === 'function') {
+              this.onCookieDeleted(cookie, false);
+            }
+          });
       });
+      const editBtn = clone.querySelector('.edit-btn');
+      if (editBtn && typeof this.onEditCookie === 'function') {
+        editBtn.addEventListener('click', () => this.onEditCookie(cookie));
+      }
 
       list.appendChild(clone);
     });

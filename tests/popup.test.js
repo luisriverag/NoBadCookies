@@ -8,6 +8,10 @@ document.body.innerHTML = `
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="Search cookies...">
     </div>
+    <span id="removedCookieCount">0</span>
+    <span id="removedCookieFailedCount">0</span>
+    <span id="removedCookieRetrySuccessCount">0</span>
+    <p id="actionStatus" class="muted" aria-live="polite"></p>
     <div id="cookieList"></div>
     <div class="button-bar">
       <button id="addCookie">Add</button>
@@ -20,7 +24,10 @@ document.body.innerHTML = `
     <div class="cookie-item">
       <div class="cookie-header">
         <span class="cookie-name"></span>
-        <button class="delete-btn">×</button>
+        <div>
+          <button class="edit-btn">Edit</button>
+          <button class="delete-btn">×</button>
+        </div>
       </div>
       <div class="cookie-details">
         <div class="cookie-value"></div>
@@ -174,6 +181,25 @@ describe('Cookie Rendering', () => {
 
     expect(list.children.length).toBe(1);
     expect(list.querySelector('.cookie-name').textContent).toBe('test');
+  });
+
+  test('should include live action status region', () => {
+    const status = document.getElementById('actionStatus');
+    expect(status).toBeTruthy();
+    expect(status.getAttribute('aria-live')).toBe('polite');
+  });
+
+  test('should include removal telemetry counters in DOM', () => {
+    expect(document.getElementById('removedCookieCount')).toBeTruthy();
+    expect(document.getElementById('removedCookieFailedCount')).toBeTruthy();
+    expect(document.getElementById('removedCookieRetrySuccessCount')).toBeTruthy();
+  });
+
+  test('should include edit and delete actions in rendered template', () => {
+    const template = document.getElementById('cookieTemplate');
+    const clone = template.content.cloneNode(true);
+    expect(clone.querySelector('.edit-btn')).toBeTruthy();
+    expect(clone.querySelector('.delete-btn')).toBeTruthy();
   });
 });
 

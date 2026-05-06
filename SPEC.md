@@ -5,6 +5,7 @@
 NoBadCookies is a browser extension that combines two core functionalities:
 1. **Automatic cookie banner removal** - Hides GDPR/cookie consent banners and auto-accepts necessary cookies
 2. **Cookie management** - View, edit, create, and delete cookies via popup/side panel/devtools
+3. **Session-preserving cleanup** - Stop the pop-ups. Keep the logins. Clear the rest.
 
 ## Architecture
 
@@ -58,6 +59,7 @@ let tabList = {};  // Tracks open tabs: { tabId: { hostname, whitelisted } }
 
 1. **`onStartup`**: Recreates tab list from currently open tabs, checks whitelist
 2. **`onInstalled`**: Sets default values in `chrome.storage.local`:
+   - `settingsVersion`: Integer schema version for storage migrations
    - `whitelist`: Array of whitelisted domains (no auto-removal)
    - `showBadge`: Boolean to show/hide badge indicators
    - `approved_cookie_supplier`: Array of domain patterns where cookies persist
@@ -121,6 +123,7 @@ If NOT approved:
 function matchesPattern(hostname, pattern):
     - '*' → matches everything
     - '*.domain.com' → matches domain.com and *.domain.com
+    - 'prefix.*' → prefix match (e.g. 192.168.1.*)
     - 'domain.com' → exact match only
 ```
 
@@ -136,6 +139,7 @@ function matchesPattern(hostname, pattern):
 | `getApprovedSuppliers` | Get approved suppliers list | Array of patterns |
 | `saveApprovedSuppliers` | Update suppliers list | Success status |
 | `isApprovedSupplier` | Check if domain is approved | Boolean |
+| `getRemovalStats` | Get removal telemetry | `{ count, failedCount, log }` |
 
 ---
 
@@ -216,6 +220,8 @@ Properties:
   - **Import**: Reads JSON file and imports cookies
   - **Refresh**: Reloads cookie list
   - **Toggle Whitelist**: Enables/disables auto-removal for current domain
+  - **Action status**: Shows inline success/failure messages for save/delete actions
+  - **Removal telemetry panel**: Displays totals for removals, failed removals, and retry recoveries
 
 **`cookieHandlerPopup.js`**:
 ```javascript
@@ -223,7 +229,7 @@ class CookieHandlerPopup extends GenericCookieHandler {
   getCurrentUrl()       // Gets active tab URL via chrome.tabs.query()
   getAllCookies(url)     // Calls chrome.cookies.getAll()
   saveCookie(cookie)     // Calls chrome.cookies.set()
-  removeCookie(name, url) // Calls chrome.cookies.remove()
+  removeCookie(cookie)    // Calls chrome.cookies.remove() with domain/path/storeId-aware URL/details
   checkWhitelist(hostname) // Checks if domain is whitelisted
   toggleWhitelist(hostname) // Toggles whitelist status
 }
@@ -252,7 +258,16 @@ Default approved suppliers:
 *.mksmad.org
 *.riverlan.com
 *.luisriverag.com
+*.amazon.es
+*.printables.com
+192.168.1.*
+*.aliexpress.com
+*.archive.today
+*.archive.ph
+*.archive.is
 ```
+
+On install/update, defaults are merged into existing `approved_cookie_supplier` entries so users keep custom additions while receiving newly shipped defaults.
 
 #### Generic Cookie Handler (`interface/lib/genericCookieHandler.js`)
 

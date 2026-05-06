@@ -2,7 +2,14 @@ const defaultSuppliers = [
   '*.github.com',
   '*.gmail.com',
   '*.chatgpt.com',
-  '*.mksmad.org'
+  '*.mksmad.org',
+  '*.amazon.es',
+  '*.printables.com',
+  '192.168.1.*',
+  '*.aliexpress.com',
+  '*.archive.today',
+  '*.archive.ph',
+  '*.archive.is'
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -54,8 +61,17 @@ function renderSuppliers(suppliers) {
 function addSupplier() {
   const input = document.getElementById('newSupplier');
   const newSupplier = input.value.trim();
+  const feedbackEl = document.getElementById('supplierFeedback');
 
-  if (!newSupplier) return;
+  if (!newSupplier) {
+    feedbackEl.textContent = 'Please enter a supplier domain pattern.';
+    return;
+  }
+
+  if (!/^(\*|(\*\.)?[a-z0-9.-]+|[a-z0-9.-]+\.\*)$/i.test(newSupplier)) {
+    feedbackEl.textContent = 'Invalid supplier format. Example: *.example.com';
+    return;
+  }
 
   chrome.storage.local.get(['approved_cookie_supplier'], (result) => {
     const suppliers = result.approved_cookie_supplier || [];
@@ -63,9 +79,13 @@ function addSupplier() {
       suppliers.push(newSupplier);
       chrome.storage.local.set({ approved_cookie_supplier: suppliers }, () => {
         input.value = '';
+        feedbackEl.textContent = 'Supplier added.';
         loadSuppliers();
       });
+      return;
     }
+
+    feedbackEl.textContent = 'Supplier already exists.';
   });
 }
 

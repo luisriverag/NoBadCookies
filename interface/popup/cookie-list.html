@@ -15,6 +15,7 @@
       <h2>NoBadCookies</h2>
       <button id="toggleWhitelist" title="Toggle auto-remove for this site">⛔</button>
     </div>
+    <p id="actionStatus" class="muted" aria-live="polite"></p>
 
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="cookiesTab" aria-selected="true">Cookies</button>
@@ -38,12 +39,15 @@
     <section id="removedTab" class="tab-content">
       <div class="panel">
         <div class="panel-title">Removed cookies count: <span id="removedCookieCount">0</span></div>
+        <div class="panel-title">Failed removals: <span id="removedCookieFailedCount">0</span></div>
+        <div class="panel-title">Retry successes: <span id="removedCookieRetrySuccessCount">0</span></div>
         <ul id="removedCookieLog" class="log-list"><li class="muted">No cookies removed yet.</li></ul>
       </div>
     </section>
 
     <section id="createTab" class="tab-content">
       <div class="form-panel">
+        <p id="editModeBanner" class="muted" style="display:none;"></p>
         <label for="cookieNameInput">Name</label>
         <input id="cookieNameInput" type="text" placeholder="session_id">
 
@@ -58,7 +62,10 @@
           Secure cookie
         </label>
 
-        <button id="createCookieBtn">Create Cookie</button>
+        <div class="button-bar">
+          <button id="createCookieBtn">Create Cookie</button>
+          <button id="cancelEditBtn" style="display:none;">Cancel Edit</button>
+        </div>
       </div>
     </section>
 
@@ -82,7 +89,10 @@
     <div class="cookie-item">
       <div class="cookie-header">
         <span class="cookie-name"></span>
-        <button class="delete-btn">×</button>
+        <div>
+          <button class="edit-btn">Edit</button>
+          <button class="delete-btn">×</button>
+        </div>
       </div>
       <div class="cookie-details">
         <div class="cookie-value"></div>

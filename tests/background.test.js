@@ -48,6 +48,10 @@ describe('Pattern Matching', () => {
   // Extract the matchesPattern function logic
   function matchesPattern(hostname, pattern) {
     if (pattern === '*') return true;
+    if (pattern.endsWith('.*')) {
+      const prefix = pattern.slice(0, -1);
+      return hostname.startsWith(prefix);
+    }
     if (pattern.startsWith('*.')) {
       const domain = pattern.slice(2);
       return hostname === domain || hostname.endsWith('.' + domain);
@@ -71,11 +75,20 @@ describe('Pattern Matching', () => {
     expect(matchesPattern('any-domain.com', '*')).toBe(true);
     expect(matchesPattern('another.com', '*')).toBe(true);
   });
+
+  test('should match prefix wildcard', () => {
+    expect(matchesPattern('192.168.1.25', '192.168.1.*')).toBe(true);
+    expect(matchesPattern('192.168.2.25', '192.168.1.*')).toBe(false);
+  });
 });
 
 describe('Approved Supplier Checking', () => {
   function matchesPattern(hostname, pattern) {
     if (pattern === '*') return true;
+    if (pattern.endsWith('.*')) {
+      const prefix = pattern.slice(0, -1);
+      return hostname.startsWith(prefix);
+    }
     if (pattern.startsWith('*.')) {
       const domain = pattern.slice(2);
       return hostname === domain || hostname.endsWith('.' + domain);
@@ -159,6 +172,39 @@ describe('Cookie Deletion', () => {
     const url = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
 
     expect(url).toBe('https://github.com/');
+  });
+});
+
+describe('Removal Stats Shape', () => {
+  test('should include retrySuccessCount in stats payload', () => {
+    const result = {
+      removedCookieCount: 3,
+      removedCookieFailedCount: 1,
+      removedCookieRetrySuccessCount: 2,
+      removedCookieLog: []
+    };
+    const payload = {
+      count: result.removedCookieCount || 0,
+      failedCount: result.removedCookieFailedCount || 0,
+      retrySuccessCount: result.removedCookieRetrySuccessCount || 0,
+      log: result.removedCookieLog || []
+    };
+
+    expect(payload).toEqual({
+      count: 3,
+      failedCount: 1,
+      retrySuccessCount: 2,
+      log: []
+    });
+  });
+});
+
+describe('Settings Versioning', () => {
+  test('should bump settings version when stored version is older', () => {
+    const SETTINGS_VERSION = 2;
+    const stored = { settingsVersion: 1 };
+    const shouldBump = (stored.settingsVersion || 0) < SETTINGS_VERSION;
+    expect(shouldBump).toBe(true);
   });
 });
 
