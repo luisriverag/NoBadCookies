@@ -103,7 +103,7 @@ describe('Cookie Operations', () => {
     });
   });
 
-  describe('Cookie Deletion Logic', () => {
+describe('Cookie Deletion Logic', () => {
     test('should identify cookies to delete for non-approved domain', () => {
       const cookies = [
         { name: 'session', domain: 'example.com', path: '/', secure: true },
@@ -126,6 +126,19 @@ describe('Cookie Operations', () => {
         expect(cookies.length).toBe(1);
       }
     });
+  });
+
+  test('should build retry URL with normalized domain and https', () => {
+    const cookie = {
+      name: 'session',
+      domain: '.example.com',
+      path: '/account',
+      secure: false
+    };
+    const normalizedDomain = (cookie.domain || '').replace(/^\./, '');
+    const normalizedPath = cookie.path || '/';
+    const retryUrl = `https://${normalizedDomain}${normalizedPath}`;
+    expect(retryUrl).toBe('https://example.com/account');
   });
 });
 

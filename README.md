@@ -1,6 +1,7 @@
 # NoBadCookies
 
 A browser extension that combines automatic cookie banner removal with powerful cookie management.
+**Stop the pop-ups. Keep the logins. Clear the rest.**
 
 ## Features
 
@@ -8,6 +9,7 @@ A browser extension that combines automatic cookie banner removal with powerful 
 - **Cookie editor** - View, edit, create, and delete cookies from a popup interface
 - **Auto-delete cookies on tab close** - Automatically removes cookies when you close a tab (configurable)
 - **Approved cookie suppliers** - Whitelist domains that should keep cookies (supports wildcards like `*.github.com`)
+- **Prefix wildcard support** - Pattern matching supports `192.168.1.*` for local ranges and similar host prefixes
 - **Whitelist support** - Disable auto-removal for specific domains
 - **Export/Import** - Export cookies as JSON, import cookie data
 - **Manifest V3** - Modern extension architecture
@@ -38,9 +40,12 @@ A browser extension that combines automatic cookie banner removal with powerful 
 ### Cookie Management
 - Click the extension icon to open the cookie manager
 - **Search**: Filter cookies by name or value
+- **Edit/Create**: Edit existing cookies with prefilled form, then save or cancel
 - **Export**: Download all cookies as JSON
 - **Import**: Load cookies from a JSON file
 - **Refresh**: Reload the cookie list
+- **Action status**: Inline success/error feedback is shown for save/delete actions
+- **Removal telemetry**: Removed tab shows total removals, failed removals, and retry recoveries
 
 ### Managing Approved Suppliers
 - Click "Manage Approved Suppliers" in the popup
@@ -53,6 +58,13 @@ A browser extension that combines automatic cookie banner removal with powerful 
   - `*.mksmad.org`
   - `*.riverlan.com`
   - `*.luisriverag.com`
+  - `*.amazon.es`
+  - `*.printables.com`
+  - `192.168.1.*`
+  - `*.aliexpress.com`
+  - `*.archive.today`
+  - `*.archive.ph`
+  - `*.archive.is`
 
 ## How It Works
 
@@ -65,6 +77,7 @@ A browser extension that combines automatic cookie banner removal with powerful 
 1. When you close a tab, the extension checks if the domain is an "approved supplier"
 2. If **not** approved, all cookies for that domain are deleted
 3. If approved, cookies persist (useful for sites you want to stay logged in)
+4. Removal telemetry tracks both success and failed deletion attempts for diagnostics
 
 ## Technical Details
 
@@ -100,7 +113,7 @@ The current test suite focuses primarily on behavior and message flows. Jest cov
 ## Based On
 
 This extension combines the best of both worlds:
-- [I-Still-Dont-Care-About-Cookies](https://github.com/犹他狐/I-Still-Dont-Care-About-Cookies) - Cookie banner removal
+- [I-Still-Dont-Care-About-Cookies](https://github.com/OhMyGuus/I-Still-Dont-Care-About-Cookies) - Cookie banner removal
 - [Cookie-Editor](https://github.com/MasterMind2k/cookie-editor) - Cookie management UI
 
 ## Contributing

@@ -1,4 +1,5 @@
 let tabList = {};
+const SETTINGS_VERSION = 2;
 
 chrome.runtime.onStartup.addListener(() => {
   chrome.tabs.query({}, (tabs) => {
@@ -13,7 +14,26 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.get(['whitelist', 'showBadge', 'approved_cookie_supplier', 'removedCookieCount', 'removedCookieLog'], (result) => {
+  const defaultSuppliers = [
+    '*.github.com',
+    '*.gmail.com',
+    '*.chatgpt.com',
+    '*.mksmad.org',
+    '*.riverlan.com',
+    '*.luisriverag.com',
+    '*.amazon.es',
+    '*.printables.com',
+    '192.168.1.*',
+    '*.aliexpress.com',
+    '*.archive.today',
+    '*.archive.ph',
+    '*.archive.is'
+  ];
+
+  chrome.storage.local.get(['settingsVersion', 'whitelist', 'showBadge', 'approved_cookie_supplier', 'removedCookieCount', 'removedCookieFailedCount', 'removedCookieRetrySuccessCount', 'removedCookieLog'], (result) => {
+    if ((result.settingsVersion || 0) < SETTINGS_VERSION) {
+      chrome.storage.local.set({ settingsVersion: SETTINGS_VERSION });
+    }
     if (!result.whitelist) {
       chrome.storage.local.set({ whitelist: [] });
     }
@@ -23,20 +43,24 @@ chrome.runtime.onInstalled.addListener(() => {
     if (result.removedCookieCount === undefined) {
       chrome.storage.local.set({ removedCookieCount: 0 });
     }
+    if (result.removedCookieFailedCount === undefined) {
+      chrome.storage.local.set({ removedCookieFailedCount: 0 });
+    }
+    if (result.removedCookieRetrySuccessCount === undefined) {
+      chrome.storage.local.set({ removedCookieRetrySuccessCount: 0 });
+    }
     if (!result.removedCookieLog) {
       chrome.storage.local.set({ removedCookieLog: [] });
     }
     if (!result.approved_cookie_supplier) {
       chrome.storage.local.set({
-        approved_cookie_supplier: [
-          '*.github.com',
-          '*.gmail.com',
-          '*.chatgpt.com',
-          '*.mksmad.org',
-          '*.riverlan.com',
-          '*.luisriverag.com'
-        ]
+        approved_cookie_supplier: defaultSuppliers
       });
+    } else {
+      const mergedSuppliers = [...new Set([...(result.approved_cookie_supplier || []), ...defaultSuppliers])];
+      if (mergedSuppliers.length !== result.approved_cookie_supplier.length) {
+        chrome.storage.local.set({ approved_cookie_supplier: mergedSuppliers });
+      }
     }
   });
 });
@@ -97,8 +121,48 @@ function logCookieRemoval(entry) {
   });
 }
 
+function logCookieRemovalFailure(entry) {
+  chrome.storage.local.get(['removedCookieFailedCount', 'removedCookieLog'], (result) => {
+    const removedCookieFailedCount = (result.removedCookieFailedCount || 0) + 1;
+    const removedCookieLog = result.removedCookieLog || [];
+
+    removedCookieLog.unshift({
+      ...entry,
+      removedAt: new Date().toISOString(),
+      failed: true
+    });
+
+    chrome.storage.local.set({
+      removedCookieFailedCount: removedCookieFailedCount,
+      removedCookieLog: removedCookieLog.slice(0, 100)
+    });
+  });
+}
+
+function logCookieRemovalRetrySuccess(entry) {
+  chrome.storage.local.get(['removedCookieRetrySuccessCount', 'removedCookieLog'], (result) => {
+    const removedCookieRetrySuccessCount = (result.removedCookieRetrySuccessCount || 0) + 1;
+    const removedCookieLog = result.removedCookieLog || [];
+
+    removedCookieLog.unshift({
+      ...entry,
+      removedAt: new Date().toISOString(),
+      retried: true
+    });
+
+    chrome.storage.local.set({
+      removedCookieRetrySuccessCount: removedCookieRetrySuccessCount,
+      removedCookieLog: removedCookieLog.slice(0, 100)
+    });
+  });
+}
+
 function matchesPattern(hostname, pattern) {
   if (pattern === '*') return true;
+  if (pattern.endsWith('.*')) {
+    const prefix = pattern.slice(0, -1);
+    return hostname.startsWith(prefix);
+  }
   if (pattern.startsWith('*.')) {
     const domain = pattern.slice(2);
     return hostname === domain || hostname.endsWith('.' + domain);
@@ -120,25 +184,37 @@ async function autoRemoveCookies(hostname) {
   const approved = await isApprovedSupplier(hostname);
   if (approved) return;
 
-  chrome.cookies.getAll({ domain: hostname }, (cookies) => {
-    cookies.forEach(cookie => {
-      const url = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
-      chrome.cookies.remove({ url: url, name: cookie.name }, (details) => {
-        if (details) {
-          logCookieRemoval({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: 'auto' });
+  function removeCookieWithRetry(cookie, source) {
+    const initialUrl = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
+    chrome.cookies.remove({ url: initialUrl, name: cookie.name }, (details) => {
+      if (details) {
+        logCookieRemoval({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: source });
+        return;
+      }
+
+      const normalizedDomain = (cookie.domain || '').replace(/^\./, '');
+      const normalizedPath = cookie.path || '/';
+      const retryUrl = `https://${normalizedDomain}${normalizedPath}`;
+      chrome.cookies.remove({ url: retryUrl, name: cookie.name }, (retryDetails) => {
+        if (retryDetails) {
+          logCookieRemoval({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: `${source}-retry` });
+          logCookieRemovalRetrySuccess({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: `${source}-retry` });
+        } else {
+          logCookieRemovalFailure({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: source });
         }
       });
+    });
+  }
+
+  chrome.cookies.getAll({ domain: hostname }, (cookies) => {
+    cookies.forEach(cookie => {
+      removeCookieWithRetry(cookie, 'auto');
     });
   });
 
   chrome.cookies.getAll({ domain: '.' + hostname }, (cookies) => {
     cookies.forEach(cookie => {
-      const url = `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`;
-      chrome.cookies.remove({ url: url, name: cookie.name }, (details) => {
-        if (details) {
-          logCookieRemoval({ name: cookie.name, domain: cookie.domain, path: cookie.path, source: 'auto' });
-        }
-      });
+      removeCookieWithRetry(cookie, 'auto');
     });
   });
 }
@@ -257,9 +333,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
   if (request.type === 'getRemovalStats') {
-    chrome.storage.local.get(['removedCookieCount', 'removedCookieLog'], (result) => {
+    chrome.storage.local.get(['removedCookieCount', 'removedCookieFailedCount', 'removedCookieRetrySuccessCount', 'removedCookieLog'], (result) => {
       sendResponse({
         count: result.removedCookieCount || 0,
+        failedCount: result.removedCookieFailedCount || 0,
+        retrySuccessCount: result.removedCookieRetrySuccessCount || 0,
         log: result.removedCookieLog || []
       });
     });

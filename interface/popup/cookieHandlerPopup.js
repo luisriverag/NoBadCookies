@@ -24,16 +24,35 @@ class CookieHandlerPopup extends GenericCookieHandler {
   }
 
   saveCookie(cookie) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       chrome.cookies.set(cookie, (result) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
         resolve(result);
       });
     });
   }
 
-  removeCookie(name, url) {
-    return new Promise((resolve) => {
-      chrome.cookies.remove({ url: url, name: name }, (result) => {
+  removeCookie(cookie) {
+    return new Promise((resolve, reject) => {
+      const host = (cookie.domain || '').replace(/^\./, '');
+      const path = cookie.path || '/';
+      const url = `http${cookie.secure ? 's' : ''}://${host}${path}`;
+      const details = { url: url, name: cookie.name };
+      if (cookie.storeId) {
+        details.storeId = cookie.storeId;
+      }
+      chrome.cookies.remove(details, (result) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        if (!result) {
+          reject(new Error('Cookie not removed.'));
+          return;
+        }
         resolve(result);
       });
     });
